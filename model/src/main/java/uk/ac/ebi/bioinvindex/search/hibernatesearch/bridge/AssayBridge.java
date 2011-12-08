@@ -122,6 +122,9 @@ public class AssayBridge extends IndexFieldDelimiters implements FieldBridge {
             document.add(fvField);
 
         }
+        
+        // Index Metabolite files
+        MetaboLightsIndexer.index(assays, document, luceneOptions);
     }
 
     private String buildType(Assay assay) {
