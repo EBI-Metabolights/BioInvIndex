@@ -1,21 +1,18 @@
 package uk.ac.ebi.bioinvindex.search.hibernatesearch.bridge;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.hibernate.search.bridge.LuceneOptions;
-
+import uk.ac.ebi.bioinvindex.model.Annotation;
 import uk.ac.ebi.bioinvindex.model.processing.Assay;
 import uk.ac.ebi.bioinvindex.model.xref.Xref;
-import uk.ac.ebi.bioinvindex.search.hibernatesearch.StudyBrowseField;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map.Entry;
 
 public class MetaboLightsIndexer {
 	
@@ -34,41 +31,40 @@ public class MetaboLightsIndexer {
 		MetaboLightsIndexer.assays = assays;
 		MetaboLightsIndexer.document = document;
 		MetaboLightsIndexer.luceneOptions = luceneOptions;
-		
-		
-		// For each assay
-		// TODO: This generates duplicate and triplicate entries?
+
+		// For each assay (lines associated with one assay)
 		for (Assay assay: assays){
 			
-			// Index the assay
-			indexAssay(assay);
+			// Index the metabolite assignment file associated with the assay.
+			// TODO, Note that we don't have to loop through all assay rows, so we can probably skip out after the first metabolite file has been found
+			if (indexAssay(assay)) break; //TODO, test
 			
 		}
 		
 	}
-	public static void indexAssay(Assay assay){
-		
-		
+
+	public static Boolean indexAssay(Assay assay){
+
 		// Check if the assay has a metabolites identifier file
 		String metabolitesFileS = getIdentifierFile(assay);
 		
 		// If there is no metabolite file...
-		if (metabolitesFileS == null) return;
-		
+		if (metabolitesFileS == null) return false;
 
 		// Get the indexed fields with the correspondent values
 		HashMap<String, StringBuilder> indexedFields = getIndexedFields(metabolitesFileS);
 				
 		// For each field indexed
 		for (Entry<String,StringBuilder> fld: indexedFields.entrySet()){
-
 			// Index the field
 			Field fvField = new Field("Metabolites_" + fld.getKey(), fld.getValue().toString(), luceneOptions.getStore(), luceneOptions.getIndex());
 	        document.add(fvField);
-
 		}
+
+        return true;
 		
 	}
+
 	public static HashMap<String,StringBuilder> getIndexedFields(String filename){
 		
 		// Create a Hashmap with the index of the columns we want to index (
@@ -157,20 +153,29 @@ public class MetaboLightsIndexer {
 		return indexedFields;
 		
 	}
+
 	public static String getIdentifierFile(Assay assay){
 		// TODO: how to know this??
 		
 		// Look up inside Xref collection
 		Collection<Xref> xrefs = assay.getXrefs();
+
+        String fileName = null;
+
+        for(Annotation annotation : assay.getAnnotation("Metabolite Assignment File")) {
+            fileName = annotation.getText().replaceAll(".txt","_maf.csv");
+            System.out.println("Annotation found:"+ annotation.getText());
+        }
 		
 		for (Xref xref:xrefs){
 
 			System.out.println("xref found: getAcc():" + xref.getAcc() + ", getId():" + xref.getId() + ", suorce:" + xref.getSource().toString());
 		}
 		
-		return "/Users/conesa/Development/git/IsaTools/BioInvIndex/model/src/test/resources/testdata/a_study_metabolite profiling_mass spectrometry_maf.csv";
+		return fileName; //"/Users/kenneth/Development/ISAtab/ISAcreatorWithMetabolitePlugin_BETA/isatab files/Ken1/a_study_metabolite profiling_NMR spectroscopy_maf.csv";
 		
 	}
+
 	public static String[] lineToArray(String line){
 		
 		if (line.length()>0){
@@ -183,5 +188,6 @@ public class MetaboLightsIndexer {
 		//return line.split("[^\"|\"\t\"|\"$]", -1);
 		return line.split("\"\t\"", -1);
 	}
+
 }
 
