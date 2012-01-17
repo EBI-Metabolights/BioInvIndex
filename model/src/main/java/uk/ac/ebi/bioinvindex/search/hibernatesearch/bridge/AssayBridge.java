@@ -47,15 +47,19 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.hibernate.search.bridge.FieldBridge;
 import org.hibernate.search.bridge.LuceneOptions;
+import uk.ac.ebi.bioinvindex.model.Annotation;
+import uk.ac.ebi.bioinvindex.model.AssayResult;
 import uk.ac.ebi.bioinvindex.model.processing.Assay;
+import uk.ac.ebi.bioinvindex.model.term.AnnotationTypes;
 import uk.ac.ebi.bioinvindex.model.xref.Xref;
 import uk.ac.ebi.bioinvindex.search.hibernatesearch.StudyBrowseField;
+import uk.ac.ebi.bioinvindex.utils.datasourceload.DataLocationManager;
+import uk.ac.ebi.bioinvindex.utils.processing.ProcessingUtils;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+import java.util.*;
 
 /**
  * Creates a  String template: endpoint|technology|number|&&&acc1!!!url1&&&acc2!!!url2
@@ -63,24 +67,91 @@ import java.util.Set;
  * @author Nataliya Sklyar (nsklyar@ebi.ac.uk)
  *         Date: Feb 22, 2008
  */
+
 public class AssayBridge extends IndexFieldDelimiters implements FieldBridge {
+	/**
+	 * TO test this you can invike this command (replace oracle with the correct profile element):
+	 * mvn clean test -Dtest=IndexBuilder -Pindex,oracle,index_local -DargLine="-Xms128m -Xmx512m" -e -DfailIfNoTests=false
+	 */
+	
+	
+	private static EntityManager em;
+	private static EntityManager getEntityManager(){
+	
+		if (em == null){
+			EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("BIIEntityManager");
+	        em = entityManagerFactory.createEntityManager();
+		}
+		return em;
+	}
+	
 
     public void set(String s, Object o, Document document, LuceneOptions luceneOptions) {
         Map<String, AssayTypeInfo> assayTypeToInfo = new HashMap<String, AssayTypeInfo>();
 
         Collection<Assay> assays = (Collection<Assay>) o;
+        Collection<String> assayGroupIds = new ArrayList<String>();
+        
+        DataLocationManager dataLocationManager = new DataLocationManager();
+        dataLocationManager.setEntityManager(getEntityManager());
 
         for (Assay assay : assays) {
+
+            if (itsMetabolomicsAssay(assay)) {
+            	
+            	// if we haven't already indexed it
+    			// Infer the assayGroup (file) the assay line belongs to
+    			String assayGroupId = inferAssayGroupId(assay);
+    			
+    			// If we haven't indexed it
+    			if (!assayGroupIds.contains(assayGroupId)){        	
+
+    				Collection<AssayResult> assayResults = ProcessingUtils.findAssayResultsFromAssay(assay);
+	
+	                //String fileLink = dataLocationManager.getDataLocationLink(assay.getMeasurement().getName(), assay.getTechnologyName(), assay.getStudy().getObfuscationCode(),
+	                //        AnnotationTypes.GENERIC_DATA_FILE_LINK);
+	
+	                //System.out.println("File link: " + fileLink);
+	
+	                String pathLink = dataLocationManager.getDataLocationLink(assay.getMeasurement().getName(), assay.getTechnologyName(), assay.getStudy().getObfuscationCode(),
+	                        AnnotationTypes.GENERIC_DATA_FILE_PATH);
+	
+	                System.out.println("Path link: " + pathLink);
+	
+	                boolean breakFlag = false;
+	                
+	                for (AssayResult result : assayResults) {
+	                    for (Annotation annotation : result.getData().getAnnotation("metaboliteFile")) {
+	                        System.out.printf("Type: %s -> Value: %s\n", annotation.getType().getValue(), annotation.getText());
+	                        MetaboLightsIndexer.indexMetaboliteFile(pathLink.replace("${study-acc}",
+	                                assay.getStudy().getAcc() + "_" + assay.getStudy().getObfuscationCode()) + "/" +  annotation.getText(),
+	                                document,
+	                                luceneOptions);
+	                        
+	                        breakFlag = true;
+	                        
+	                        // This should be done only once for the whole assayGroup
+	                        if (breakFlag) break;
+	                    }
+	                    
+	                    if (breakFlag) break;
+	                }
+	                
+	             // Add the assayGroup as indexed
+				 assayGroupIds.add(assayGroupId);
+    			
+    			}
+            }
 
             String type = buildType(assay);
 
             if (!assayTypeToInfo.containsKey(type)) {
-                AssayTypeInfo info  = new AssayTypeInfo();
+                AssayTypeInfo info = new AssayTypeInfo();
                 assayTypeToInfo.put(type, info);
             }
 
             for (Xref xref : assay.getXrefs()) {
-                System.out.println("Adding XREF to AssayTypeInfo: " + xref.getSource().getAcc() + "(" + xref.getAcc() +  ") for " + type);
+                System.out.println("Adding XREF to AssayTypeInfo: " + xref.getSource().getAcc() + "(" + xref.getAcc() + ") for " + type);
 
                 StringBuilder sb = new StringBuilder();
                 sb.append("xref(").append(xref.getAcc()).append("->");
@@ -120,15 +191,16 @@ public class AssayBridge extends IndexFieldDelimiters implements FieldBridge {
             }
             Field fvField = new Field(StudyBrowseField.ASSAY_INFO.getName(), fullInfo.toString(), luceneOptions.getStore(), luceneOptions.getIndex());
             document.add(fvField);
-
         }
-        
-        // Index Metabolite files
-        MetaboLightsIndexer.index(assays, document, luceneOptions);
+
+        em.close();
     }
 
     private String buildType(Assay assay) {
         return assay.getMeasurement().getName() + "|" + assay.getTechnologyName();
+    }
+    private boolean itsMetabolomicsAssay(Assay assay){
+    	return (assay.getTechnologyName().equals("mass spectrometry") || assay.getTechnologyName().equals("NMR spectroscopy"));
     }
 
 
@@ -154,4 +226,16 @@ public class AssayBridge extends IndexFieldDelimiters implements FieldBridge {
             accessions.add(acc);
         }
     }
+	/**
+	 * Assay are really assay lines. Our index is for the whole group of assay lines that has no correspondence in the model (so far)
+	 * This method will return a String representing the assay group (file) the assay line belongs to.
+	 * @param assay (This represent an assay line!!!)
+	 * @return
+	 */
+	public static String inferAssayGroupId(Assay assay){
+		//TODO: if there are 2 assayGroups (files) within the same study and with the same technology, measurement, and platform.
+		return (assay.getTechnologyName() + assay.getMeasurement().getName() + assay.getAssayPlatform() );
+		
+	}
+
 }
