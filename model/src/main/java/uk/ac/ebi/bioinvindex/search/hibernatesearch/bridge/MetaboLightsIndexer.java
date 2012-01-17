@@ -3,22 +3,35 @@ package uk.ac.ebi.bioinvindex.search.hibernatesearch.bridge;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.hibernate.search.bridge.LuceneOptions;
+
+import uk.ac.ebi.bioinvindex.dao.ejb3.DaoFactory;
 import uk.ac.ebi.bioinvindex.model.Annotation;
+import uk.ac.ebi.bioinvindex.model.AssayResult;
 import uk.ac.ebi.bioinvindex.model.processing.Assay;
+import uk.ac.ebi.bioinvindex.model.term.AnnotationTypes;
 import uk.ac.ebi.bioinvindex.model.xref.Xref;
+import uk.ac.ebi.bioinvindex.utils.datasourceload.DataLocationManager;
+import uk.ac.ebi.bioinvindex.utils.processing.ProcessingUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map.Entry;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 
 public class MetaboLightsIndexer {
 	
 	static Collection<Assay> assays;
 	static Document document;
 	static LuceneOptions luceneOptions;
+	static Collection<String> assayGroupIds = new ArrayList<String>();
+	static String dataLocation;
 	
 	static final String[] COLUMNS_TO_INDEX = {"description","identifier"};
 	// Method called from:
@@ -31,19 +44,31 @@ public class MetaboLightsIndexer {
 		MetaboLightsIndexer.assays = assays;
 		MetaboLightsIndexer.document = document;
 		MetaboLightsIndexer.luceneOptions = luceneOptions;
+		assayGroupIds.clear();
 
 		// For each assay (lines associated with one assay)
 		for (Assay assay: assays){
 			
-			// Index the metabolite assignment file associated with the assay.
-			// TODO, Note that we don't have to loop through all assay rows, so we can probably skip out after the first metabolite file has been found
-			if (indexAssay(assay)) break; //TODO, test
+			// Infer the assayGroup (file) the assay line belongs to
+			String assayGroupId = inferAssayGroupId(assay);
+			
+			// If we haven't indexed it
+			if (!assayGroupIds.contains(assayGroupId)){
+
+				// Index the metabolite assignment file associated with the assay.
+				indexAssay(assay); //TODO, test
+
+				// Add the assayGroup as indexed
+				assayGroupIds.add(assayGroupId);
+			}
+			
 			
 		}
 		
 	}
 
 	public static Boolean indexAssay(Assay assay){
+
 
 		// Check if the assay has a metabolites identifier file
 		String metabolitesFileS = getIdentifierFile(assay);
@@ -62,6 +87,17 @@ public class MetaboLightsIndexer {
 		}
 
         return true;
+		
+	}
+	/**
+	 * Assay are really assay lines. Our index is for the whole group of assay lines that has no correspondence in the model (so far)
+	 * This method will return a String representing the assay group (file) the assay line belongs to.
+	 * @param assay (This represent an assay line!!!)
+	 * @return
+	 */
+	public static String inferAssayGroupId(Assay assay){
+		//TODO: if there are 2 assayGroups (files) within the same study and with the same technology, measurement, and platform.
+		return (assay.getTechnologyName() + assay.getMeasurement().getName() + assay.getAssayPlatform() );
 		
 	}
 
@@ -155,27 +191,74 @@ public class MetaboLightsIndexer {
 	}
 
 	public static String getIdentifierFile(Assay assay){
+
 		// TODO: how to know this??
+		String fileName = null;
 		
-		// Look up inside Xref collection
-		Collection<Xref> xrefs = assay.getXrefs();
+		// TODO: how to filter to do this only for metabolights experiments (mass spectrometry could be proteomics as well).
+        if (assay.getTechnologyName().equals("mass spectrometry") || assay.getTechnologyName().equals("NMR spectroscopy")) {
+            Collection<AssayResult> assayResults = ProcessingUtils.findAssayResultsFromAssay(assay);
 
-        String fileName = null;
-
-        for(Annotation annotation : assay.getAnnotation("Metabolite Assignment File")) {
-            fileName = annotation.getText().replaceAll(".txt","_maf.csv");
-            System.out.println("Annotation found:"+ annotation.getText());
+            for (AssayResult result : assayResults) {
+                for (Annotation annotation : result.getData().getAnnotation("metaboliteFile")) {
+                    System.out.printf("Type: %s -> Value: %s\n", annotation.getType().getValue(), annotation.getText());
+                    fileName = annotation.getText();
+                    break;
+                }
+                
+                if (!fileName.equals("")) break;
+            }
         }
 		
-		for (Xref xref:xrefs){
+        // Get the data location where the file is expected to be
+        String path = getDataLocation(assay);
+        
+        if (path == null){
+        	return null;
+        } else if (fileName==null){
+        	return null;
+        }else{
+        	return path + fileName;
+        }
 
-			System.out.println("xref found: getAcc():" + xref.getAcc() + ", getId():" + xref.getId() + ", suorce:" + xref.getSource().toString());
-		}
 		
-		return fileName; //"/Users/kenneth/Development/ISAtab/ISAcreatorWithMetabolitePlugin_BETA/isatab files/Ken1/a_study_metabolite profiling_NMR spectroscopy_maf.csv";
-		
+		//return  null; //"/Users/kenneth/Development/ISAtab/ISAcreatorWithMetabolitePlugin_BETA/isatab files/Ken1/a_study_metabolite profiling_NMR spectroscopy_maf.csv";
+		//return "/Users/conesa/Desktop/untitled folder/firstupload/a_study_metabolite profiling_mass spectrometry_maf.csv";
 	}
 
+	private static String getDataLocation(Assay assay){
+		
+		// If we still do not have a data location
+		if (dataLocation == null){
+		
+			EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("BIIEntityManager");
+			EntityManager entityManager = entityManagerFactory.createEntityManager();
+			DataLocationManager dataLocationManager = new DataLocationManager();
+			dataLocationManager.setEntityManager(entityManager);
+			
+            System.out.println("Obfuscation code for study is: " + assay.getStudy().getObfuscationCode());
+
+            String fileLink = dataLocationManager.getDataLocationLink(assay.getMeasurement().getName(), assay.getTechnologyName(), assay.getStudy().getObfuscationCode(),
+                    AnnotationTypes.GENERIC_DATA_FILE_LINK);
+
+            System.out.println("File link: " + fileLink);
+
+            String pathLink = dataLocationManager.getDataLocationLink(assay.getMeasurement().getName(), assay.getTechnologyName(), assay.getStudy().getObfuscationCode(),
+                    AnnotationTypes.GENERIC_DATA_FILE_PATH);
+
+            System.out.println("Path link: " + pathLink);
+            
+            dataLocation = pathLink;
+		
+		}
+		
+		return dataLocation;
+		
+		//return "/Users/conesa/Desktop/untitled folder/firstupload/";
+
+
+
+	}
 	public static String[] lineToArray(String line){
 		
 		if (line.length()>0){
