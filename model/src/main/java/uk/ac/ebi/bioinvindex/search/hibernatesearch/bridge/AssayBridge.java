@@ -60,6 +60,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * Creates a  String template: endpoint|technology|number|&&&acc1!!!url1&&&acc2!!!url2
@@ -78,11 +79,12 @@ public class AssayBridge extends IndexFieldDelimiters implements FieldBridge {
 	private static EntityManager em;
 	private static EntityManager getEntityManager(){
 	
-		if (em == null){
+		//if (em == null){
 			EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("BIIEntityManager");
 	        em = entityManagerFactory.createEntityManager();
-		}
+		//}
 		return em;
+
 	}
 	
 
@@ -106,6 +108,8 @@ public class AssayBridge extends IndexFieldDelimiters implements FieldBridge {
     			// If we haven't indexed it
     			if (!assayGroupIds.contains(assayGroupId)){        	
 
+    				try{
+    				
     				Collection<AssayResult> assayResults = ProcessingUtils.findAssayResultsFromAssay(assay);
 	
 	                //String fileLink = dataLocationManager.getDataLocationLink(assay.getMeasurement().getName(), assay.getTechnologyName(), assay.getStudy().getObfuscationCode(),
@@ -140,6 +144,11 @@ public class AssayBridge extends IndexFieldDelimiters implements FieldBridge {
 	             // Add the assayGroup as indexed
 				 assayGroupIds.add(assayGroupId);
     			
+    			 } catch (Exception e){
+    				 System.out.println("Exception indexing metabolites: \n\n" + e.getMessage());
+    			 }
+				 
+				 
     			}
             }
 
@@ -233,8 +242,17 @@ public class AssayBridge extends IndexFieldDelimiters implements FieldBridge {
 	 * @return
 	 */
 	public static String inferAssayGroupId(Assay assay){
+		// Get the assay file name
+		for (Annotation annotation: assay.getAnnotations()){
+			if (annotation.getType().getValue().equals("assayFileId")){
+				return annotation.getText();
+			}
+		}
+		return "";
+		
+		
 		//TODO: if there are 2 assayGroups (files) within the same study and with the same technology, measurement, and platform.
-		return (assay.getTechnologyName() + assay.getMeasurement().getName() + assay.getAssayPlatform() );
+		//return (assay.getTechnologyName() + assay.getMeasurement().getName() + assay.getAssayPlatform() );
 		
 	}
 

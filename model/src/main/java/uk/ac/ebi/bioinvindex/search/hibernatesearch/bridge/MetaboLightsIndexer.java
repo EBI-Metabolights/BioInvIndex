@@ -20,6 +20,7 @@ public class MetaboLightsIndexer {
         System.out.println("Looking to index " + metaboliteFile);
         // If there is no metabolite file...
         if (metaboliteFile == null) return false;
+        if (!new File(metaboliteFile).exists()) return false;
 
         // Get the indexed fields with the correspondent values
         HashMap<String, StringBuilder> indexedFields = getIndexedFields(metaboliteFile);
