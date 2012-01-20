@@ -8,6 +8,7 @@ import uk.ac.ebi.bioinvindex.model.processing.Assay;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
@@ -23,12 +24,12 @@ public class MetaboLightsIndexer {
         if (!new File(metaboliteFile).exists()) return false;
 
         // Get the indexed fields with the correspondent values
-        HashMap<String, StringBuilder> indexedFields = getIndexedFields(metaboliteFile);
+        ArrayList<String> metabolites = getIndexedFields(metaboliteFile);
 
         // For each field indexed
-        for (Entry<String, StringBuilder> fld : indexedFields.entrySet()) {
+        for (String metabolite: metabolites) {
             // Index the field
-            Field fvField = new Field("Metabolites_" + fld.getKey(), fld.getValue().toString(), luceneOptions.getStore(), luceneOptions.getIndex());
+            Field fvField = new Field("Metabolite", metabolite, luceneOptions.getStore(), luceneOptions.getIndex());
             document.add(fvField);
         }
 
@@ -36,18 +37,17 @@ public class MetaboLightsIndexer {
 
     }
 
-    public static HashMap<String, StringBuilder> getIndexedFields(String filename) {
+    public static ArrayList<String> getIndexedFields(String filename) {
 
         // Create a Hashmap with the index of the columns we want to index (
         HashMap<String, Integer> column_indexes = new HashMap<String, Integer>();
-
-        // Hash with the field as the key and the values (Separated by ~) as values.
-        HashMap<String, StringBuilder> indexedFields = new HashMap<String, StringBuilder>();
+        
+        // Hash with the metabolites found
+        ArrayList<String> metabolites = new ArrayList<String>();
 
         // For each field to index
         for (String aCOLUMNS_TO_INDEX : COLUMNS_TO_INDEX) {
             column_indexes.put(aCOLUMNS_TO_INDEX, null);
-            indexedFields.put(aCOLUMNS_TO_INDEX, new StringBuilder(""));
         }
 
         // Read the first line
@@ -81,29 +81,35 @@ public class MetaboLightsIndexer {
 
                             // Add the index
                             column_indexes.put(field, i);
+                            
                         }
                     }
 
                 } else {
 
-                    // Get the values
+                	String metabolite = "";
+                	boolean isRowEmpty = true;
+
+                	// Get the values
                     // For each column to index
                     for (Entry<String, Integer> ci : column_indexes.entrySet()) {
 
+                    	// Add the name of the field
+                    	//metabolite = metabolite.concat("~" + ci.getKey());
+                    	
                         // Get the value
                         String value = lineArray[ci.getValue()];
-
+                        
                         // If value is NOT empty
-                        if (!value.isEmpty()) {
+                        if (!value.isEmpty())  isRowEmpty = false;
+                        	
+                        metabolite = metabolite.concat("~" + value );
 
-                            // Get the previous value
-                            StringBuilder previousValue = indexedFields.get(ci.getKey());
-
-                            // Add the new value
-                            previousValue.append("~" + value);
-
-                        }
+                        
                     }
+                    
+                    // If we have found values add the string to the metabolites array
+                    if (!isRowEmpty) metabolites.add(metabolite);
                 }
 
 
@@ -120,7 +126,8 @@ public class MetaboLightsIndexer {
         }
 
         // Return indexed fields
-        return indexedFields;
+        //return indexedFields;
+        return metabolites;
 
     }
 

@@ -1,5 +1,6 @@
 package uk.ac.ebi.bioinvindex.search.hibernatesearch.bridge;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.junit.Test;
@@ -47,12 +48,21 @@ public class MetaboLightsIndexerTest {
 		
 		String file = "src/test/resources/testdata/MetabolightsSample.csv";
 		
-		HashMap<String,StringBuilder> indexedFields = MetaboLightsIndexer.getIndexedFields(file);
+		ArrayList<String> metabolites = MetaboLightsIndexer.getIndexedFields(file);
 		
 		
-		assertEquals("Field Indexed must be 2, identifier and description.", 2, indexedFields.entrySet().size());
-		assertEquals("Identifier field values", "~CHEBI:44843~CHEBI:44841~LMGP01010629~HMDB07991", indexedFields.get("identifier").toString());
-		assertEquals("Description field values", "~PC(16:0/16:0)~PC(16:0/16:0)~PC(16:0/18:1)~PC(16:0/18:2)~PC(16:0/20:3)/PC(18:2/18:1)~PC(16:0/20:4)~PC(18:2/16:0)", indexedFields.get("description").toString());
+		assertEquals("Metabolites Indexed must be 8.", 8, metabolites.size());
+		
+		assertEquals("1 metabolite test", "~PC(16:0/16:0)~CHEBI:44843", metabolites.get(0));
+		assertEquals("2 metabolite test", "~PC(16:0/16:0)~CHEBI:44841", metabolites.get(1));
+		assertEquals("3 metabolite test", "~PC(16:0/18:1)~", metabolites.get(2));
+		assertEquals("4 metabolite test", "~PC(16:0/18:2)~", metabolites.get(3));
+		assertEquals("5 metabolite test", "~PC(16:0/20:3)/PC(18:2/18:1)~", metabolites.get(4));
+		assertEquals("6 metabolite test", "~PC(16:0/20:4)~LMGP01010629", metabolites.get(5));
+		assertEquals("7 metabolite test", "~~HMDB07991", metabolites.get(6));
+		assertEquals("8 metabolite test", "~PC(18:2/16:0)~", metabolites.get(7));
+//		assertEquals("Identifier field values", "~~", indexedFields.get("identifier").toString());
+//		assertEquals("Description field values", "~~~~~~~", indexedFields.get("description").toString());
 		
 		
 		
