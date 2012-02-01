@@ -124,6 +124,11 @@ public class Study extends HasReferences {
 
 	private String obfuscationCode = null;
 	
+	// Metaboligths persistance
+	//@IndexedEmbedded(prefix = "assay_group_")
+	//@Field(index = Index.UN_TOKENIZED, store = Store.YES)
+	private Collection <AssayGroup> assayGroups = new ArrayList<AssayGroup>(); 
+	
 	public Study() {
 	}
 
@@ -183,7 +188,17 @@ public class Study extends HasReferences {
 	public Collection<Design> getDesigns() {
 		return designs;
 	}
-
+	
+	// Metabolights persistance
+	@OneToMany(targetEntity = AssayGroup.class, mappedBy = "study")
+	public Collection<AssayGroup> getAssayGroups() {
+		
+		return assayGroups;
+	}
+	protected void setAssayGroups(List<AssayGroup> assayGroups){
+		this.assayGroups = assayGroups;
+	}
+	
 	public void addDesign(Design design) {
 		if (design == null) {
 			throw new IllegalArgumentException("design cannot be null!");
@@ -348,8 +363,7 @@ public class Study extends HasReferences {
 			investigation.removeStudy(this);
 		}
 	}
-	
-	
+		
 	
 	@ManyToMany ( targetEntity = Protocol.class )
 	@PrimaryKeyJoinColumns ( { 

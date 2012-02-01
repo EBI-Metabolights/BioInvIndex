@@ -71,7 +71,7 @@ import java.util.logging.Logger;
 
 public class AssayBridge extends IndexFieldDelimiters implements FieldBridge {
 	/**
-	 * TO test this you can invike this command (replace oracle with the correct profile element):
+	 * To test this you can invike this command (replace oracle with the correct profile element):
 	 * mvn clean test -Dtest=IndexBuilder -Pindex,oracle,index_local -DargLine="-Xms128m -Xmx512m" -e -DfailIfNoTests=false
 	 */
 	
