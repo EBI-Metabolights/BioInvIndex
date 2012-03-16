@@ -44,6 +44,7 @@ package uk.ac.ebi.bioinvindex.model;
  */
 
 import org.apache.commons.lang.StringUtils;
+import org.hibernate.annotations.Cascade;
 import org.hibernate.search.annotations.*;
 import uk.ac.ebi.bioinvindex.mibbi.MIProject;
 import uk.ac.ebi.bioinvindex.model.processing.Assay;
@@ -190,7 +191,10 @@ public class Study extends HasReferences {
 	}
 	
 	// Metabolights persistance
-	@OneToMany(targetEntity = AssayGroup.class, mappedBy = "study")
+	@OneToMany(targetEntity = AssayGroup.class, 
+			cascade = {CascadeType.ALL})
+	@JoinColumn(name= "study_id")
+	
 	public Collection<AssayGroup> getAssayGroups() {
 		
 		return assayGroups;

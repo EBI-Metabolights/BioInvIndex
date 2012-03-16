@@ -163,6 +163,9 @@ public class StudyPersister extends AccessiblePersister<Study>
 		if ( needsUpdate )
 			dao.update ( study );
 
+		// Metabolights persistence
+		for (AssayGroup ag: study.getAssayGroups()) assayGroupPersister.persist(ag);
+		
 		// Publications
 		for ( Publication pub: study.getPublications () )
 			pubPersister.persist ( pub );
@@ -176,9 +179,7 @@ public class StudyPersister extends AccessiblePersister<Study>
 
 		// assay-results
 		for ( AssayResult ar: study.getAssayResults () ) assayResultPersister.persist ( ar );
-	
-		// Metabolights persistence
-		for (AssayGroup ag: study.getAssayGroups()) assayGroupPersister.persist(ag);
+
 		
 		super.postProcess ( study );
 	}

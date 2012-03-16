@@ -11,29 +11,15 @@ import org.hibernate.search.annotations.*;
 @Table(name = "ASSAYGROUP")
 public class AssayGroup extends Identifiable{
 
-	@ContainedIn
-	private Study study;
-	
 	private Collection<MZTab> mzTabs = new ArrayList<MZTab>();
 	
 	//@Field (name="filename", index = Index.TOKENIZED, store = Store.YES)
 	private String fileName;
-	
 
-	public AssayGroup(Study study, String fileName){
-		this.study = study;
+	public AssayGroup(String fileName){
 		this.fileName = fileName;
 	}
 	
-	@ManyToOne(targetEntity = Study.class)
-	@JoinColumn(name = "STUDY_ID", nullable = false)
-	public Study getStudy() {
-		return study;
-	}
-	protected void setStudy(Study study) {
-		this.study = study;
-	}
-
 	public String getFileName() {
 		return fileName;
 	}
@@ -42,7 +28,8 @@ public class AssayGroup extends Identifiable{
 		this.fileName = fileName;
 	}
 	
-	@OneToMany(targetEntity = MZTab.class)
+	@OneToMany(targetEntity = MZTab.class,
+			cascade = {CascadeType.ALL})
 	@JoinColumn(name = "ASSAYGROUP_ID", nullable = true)
 	public Collection<MZTab> getMzTabs() {
 		return mzTabs;
@@ -50,5 +37,25 @@ public class AssayGroup extends Identifiable{
 
 	public void setMzTabs(Collection<MZTab> mzTabs) {
 		this.mzTabs = mzTabs;
+	}
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		if (!super.equals(o)) return false;
+
+		AssayGroup ag = (AssayGroup) o;
+
+
+		if (fileName != null ? !fileName.equals(ag.fileName) : ag.fileName != null) return false;
+
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = super.hashCode();
+		result = 31 * result + (fileName != null ? fileName.hashCode() : 0);
+		return result;
 	}
 }

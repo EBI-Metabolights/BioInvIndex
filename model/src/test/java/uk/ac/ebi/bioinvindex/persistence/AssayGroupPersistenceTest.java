@@ -100,11 +100,11 @@ public class AssayGroupPersistenceTest extends TransactionalDBUnitEJB3DAOTest
 
 		Study study = new Study ( "Testing MetaboLights Entities" );
 		
-		AssayGroup ag1 = new AssayGroup(study, "AssayGroup1.txt");
+		AssayGroup ag1 = new AssayGroup("AssayGroup1.txt");
 		MZTab mzTab1 = new MZTab(ag1,"water", "CHEBI:15377");
 		ag1.getMzTabs().add(mzTab1);
 		
-		AssayGroup ag2 = new AssayGroup(study, "AssayGroup2.txt");
+		AssayGroup ag2 = new AssayGroup("AssayGroup2.txt");
 		
 		study.getAssayGroups().add(ag1);
 		study.getAssayGroups().add(ag2);
@@ -131,10 +131,6 @@ public class AssayGroupPersistenceTest extends TransactionalDBUnitEJB3DAOTest
 		assertEquals ( "Oh no! Bad no. of assayGroups persisted!", 2, assayGroupsDB.size () );
 		for ( AssayGroup assayGroupDB: assayGroupsDB )
 			assertNotNull ( "Urp! The study assay group should have an ID", assayGroupDB.getId () );
-		
-		
-
-		
 		
 		
 		
