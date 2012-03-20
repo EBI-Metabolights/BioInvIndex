@@ -11,7 +11,7 @@ import org.hibernate.search.annotations.*;
 @Table(name = "ASSAYGROUP")
 public class AssayGroup extends Identifiable{
 
-	private Collection<MZTab> mzTabs = new ArrayList<MZTab>();
+	private Collection<Metabolite> metMetabolites = new ArrayList<Metabolite>();
 	
 	//@Field (name="filename", index = Index.TOKENIZED, store = Store.YES)
 	private String fileName;
@@ -28,15 +28,15 @@ public class AssayGroup extends Identifiable{
 		this.fileName = fileName;
 	}
 	
-	@OneToMany(targetEntity = MZTab.class,
+	@OneToMany(targetEntity = Metabolite.class,
 			cascade = {CascadeType.ALL})
 	@JoinColumn(name = "ASSAYGROUP_ID", nullable = true)
-	public Collection<MZTab> getMzTabs() {
-		return mzTabs;
+	public Collection<Metabolite> getMetabolites() {
+		return metMetabolites;
 	}
 
-	public void setMzTabs(Collection<MZTab> mzTabs) {
-		this.mzTabs = mzTabs;
+	public void setMetabolites(Collection<Metabolite> metMetabolites) {
+		this.metMetabolites = metMetabolites;
 	}
 	@Override
 	public boolean equals(Object o) {

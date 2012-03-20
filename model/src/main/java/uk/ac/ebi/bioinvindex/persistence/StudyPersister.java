@@ -81,7 +81,7 @@ public class StudyPersister extends AccessiblePersister<Study>
 	private final ContactPersister contactPersister; 
 	
 	// Metaboligths persistance
-	private final AssayGroupPersister assayGroupPersister;
+	//private final AssayGroupPersister assayGroupPersister;
 	
 	private List<Investigation> backupInvestigations;
 	
@@ -98,7 +98,7 @@ public class StudyPersister extends AccessiblePersister<Study>
 		contactPersister = new ContactPersister ( daoFactory, submissionTs );
 		
 		// Metaboligths persistance
-		assayGroupPersister = new AssayGroupPersister(daoFactory, submissionTs);
+		//assayGroupPersister = new AssayGroupPersister(daoFactory, submissionTs);
 		
 		logLevel = Level.DEBUG;
 	}
@@ -164,7 +164,7 @@ public class StudyPersister extends AccessiblePersister<Study>
 			dao.update ( study );
 
 		// Metabolights persistence
-		for (AssayGroup ag: study.getAssayGroups()) assayGroupPersister.persist(ag);
+		//for (AssayGroup ag: study.getAssayGroups()) assayGroupPersister.persist(ag);
 		
 		// Publications
 		for ( Publication pub: study.getPublications () )

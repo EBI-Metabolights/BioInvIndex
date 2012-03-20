@@ -57,7 +57,7 @@ import org.junit.Test;
 
 import uk.ac.ebi.bioinvindex.dao.ejb3.DaoFactory;
 import uk.ac.ebi.bioinvindex.model.AssayGroup;
-import uk.ac.ebi.bioinvindex.model.MZTab;
+import uk.ac.ebi.bioinvindex.model.Metabolite;
 import uk.ac.ebi.bioinvindex.model.Study;
 import uk.ac.ebi.bioinvindex.model.term.Design;
 import uk.ac.ebi.bioinvindex.utils.test.TransactionalDBUnitEJB3DAOTest;
@@ -101,8 +101,26 @@ public class AssayGroupPersistenceTest extends TransactionalDBUnitEJB3DAOTest
 		Study study = new Study ( "Testing MetaboLights Entities" );
 		
 		AssayGroup ag1 = new AssayGroup("AssayGroup1.txt");
-		MZTab mzTab1 = new MZTab(ag1,"water", "CHEBI:15377");
-		ag1.getMzTabs().add(mzTab1);
+
+		Metabolite metabolite1 = new Metabolite(ag1,"water", "CHEBI:15377");
+		metabolite1.setCharge("charge");
+		metabolite1.setChemical_formula("chemical_formula");
+		metabolite1.setChemical_shift("chemical_shift");
+		metabolite1.setDatabase("database");
+		metabolite1.setDatabase_version("database_version");
+		metabolite1.setMass_to_charge("mass_to_charge");
+		metabolite1.setFragmentation("fragmentation");
+		metabolite1.setModifications("modifications");
+		metabolite1.setMultiplicity("multiplicity");
+		metabolite1.setReliability("reliability");
+		metabolite1.setRetention_time("retention_time");
+		metabolite1.setSearch_engine("search_engine");
+		metabolite1.setSearch_engine_score("search_engine_score");
+		metabolite1.setSmallmolecule_abundance_std_error_sub("smallmolecule_abundance_std_error_sub");
+		metabolite1.setSmallmolecule_abundance_stdev_sub("smallmolecule_abundance_stdev_sub");
+		metabolite1.setSmallmolecule_abundance_sub("smallmolecule_abundance_sub");
+		
+		ag1.getMetabolites().add(metabolite1);
 		
 		AssayGroup ag2 = new AssayGroup("AssayGroup2.txt");
 		
@@ -129,9 +147,25 @@ public class AssayGroupPersistenceTest extends TransactionalDBUnitEJB3DAOTest
 		Collection<AssayGroup> assayGroupsDB = studyDB.getAssayGroups();
 		assertNotNull (  "Ops! The retuned study has no an assayGroup!", assayGroupsDB );
 		assertEquals ( "Oh no! Bad no. of assayGroups persisted!", 2, assayGroupsDB.size () );
-		for ( AssayGroup assayGroupDB: assayGroupsDB )
+		for ( AssayGroup assayGroupDB: assayGroupsDB ){
 			assertNotNull ( "Urp! The study assay group should have an ID", assayGroupDB.getId () );
-		
+			
+			// There must be only one metabolite, so far
+			for (Metabolite met : assayGroupDB.getMetabolites()){
+
+				// Check some of the properties
+				assertEquals( "charge", met.getCharge());
+				
+				assertEquals( "chemical_formula", met.getChemical_formula());
+				assertEquals( "chemical_shift", met.getChemical_shift());
+				assertEquals( "database", met.getDatabase());
+				assertEquals( "database_version", met.getDatabase_version());
+			
+				
+			}
+			
+			
+		}
 		
 		
 		

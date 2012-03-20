@@ -50,7 +50,7 @@ import uk.ac.ebi.bioinvindex.dao.AccessibleDAO;
 import uk.ac.ebi.bioinvindex.dao.ejb3.DaoFactory;
 import uk.ac.ebi.bioinvindex.model.AssayGroup;
 import uk.ac.ebi.bioinvindex.model.Data;
-import uk.ac.ebi.bioinvindex.model.MZTab;
+import uk.ac.ebi.bioinvindex.model.Metabolite;
 import uk.ac.ebi.bioinvindex.persistence.pipeline.DataPersister;
 
 /**
@@ -60,8 +60,7 @@ import uk.ac.ebi.bioinvindex.persistence.pipeline.DataPersister;
  * @author conesa
  *
  */
-public class AssayGroupPersister extends Persister<AssayGroup>
-{
+public class AssayGroupPersister extends Persister<AssayGroup>{
 	
 	private final MZTabPersister mzTabPersister;
 	
@@ -90,7 +89,7 @@ public class AssayGroupPersister extends Persister<AssayGroup>
 	public void postProcess(AssayGroup ag){
 		
 		// Persist mzTab Information
-		for (MZTab mzTab:ag.getMzTabs()) mzTabPersister.persist(mzTab);
+		for (Metabolite mzTab:ag.getMetabolites()) mzTabPersister.persist(mzTab);
 	}
 
 	

@@ -4,14 +4,14 @@ import java.sql.Timestamp;
 
 import uk.ac.ebi.bioinvindex.dao.ejb3.DaoFactory;
 import uk.ac.ebi.bioinvindex.model.AssayGroup;
-import uk.ac.ebi.bioinvindex.model.MZTab;
+import uk.ac.ebi.bioinvindex.model.Metabolite;
 
-public class MZTabPersister extends Persister<MZTab>{
+public class MZTabPersister extends Persister<Metabolite>{
 
 	public MZTabPersister ( DaoFactory daoFactory, Timestamp submissionTs ) 
 	{
 		super ( daoFactory, submissionTs );
-		dao = daoFactory.getIdentifiableDAO ( MZTab.class );
+		dao = daoFactory.getIdentifiableDAO ( Metabolite.class );
 	}
 
 	
@@ -21,7 +21,7 @@ public class MZTabPersister extends Persister<MZTab>{
 	 * 
 	 */
 	@Override
-	public void preProcess ( MZTab mzTab ) 
+	public void preProcess ( Metabolite mzTab ) 
 	{
 		// The ancestor works with the accession
 		super.preProcess ( mzTab );
@@ -31,7 +31,7 @@ public class MZTabPersister extends Persister<MZTab>{
 	
 	/** Returns null, an assay result is always new. */
 	@Override
-	protected MZTab lookup ( MZTab mzTab ) {
+	protected Metabolite lookup ( Metabolite mzTab ) {
 		return null;
 	}
 
