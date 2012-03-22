@@ -62,14 +62,14 @@ import uk.ac.ebi.bioinvindex.persistence.pipeline.DataPersister;
  */
 public class AssayGroupPersister extends Persister<AssayGroup>{
 	
-	private final MZTabPersister mzTabPersister;
+	private final MetPersister metPersister;
 	
 	public AssayGroupPersister ( DaoFactory daoFactory, Timestamp submissionTs ) 
 	{
 		super ( daoFactory, submissionTs );
 		dao = daoFactory.getIdentifiableDAO ( AssayGroup.class );
 		
-		mzTabPersister = new MZTabPersister(daoFactory, submissionTs);
+		metPersister = new MetPersister(daoFactory, submissionTs);
 	}
 
 	
@@ -89,7 +89,7 @@ public class AssayGroupPersister extends Persister<AssayGroup>{
 	public void postProcess(AssayGroup ag){
 		
 		// Persist mzTab Information
-		for (Metabolite mzTab:ag.getMetabolites()) mzTabPersister.persist(mzTab);
+		for (Metabolite mzTab:ag.getMetabolites()) metPersister.persist(mzTab);
 	}
 
 	

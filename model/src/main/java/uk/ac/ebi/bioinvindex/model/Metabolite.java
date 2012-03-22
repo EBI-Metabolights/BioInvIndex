@@ -9,13 +9,8 @@ import org.hibernate.search.annotations.*;
 @Indexed(index = "bii")
 public class Metabolite extends Identifiable{
 
-	@Field (name="DESCRIPTION")
 	private String description; //	NMR/MS: The small molecule's description/name.  Multiple values separated with | 
-
-	
-	@Field (name="IDENTIFIER")
 	private String identifier; //A list of | separated possible identifiers for these small molecules. e.g. "KEGG:C000017|CHEBI:12345"
-	
 	private String unit_id; // NMR/MS: The concatenation of the sample id plus assay id to uniquely identify that sample and run on the machine(or mass concatenated with reten tion index for unknowns)
 	private String chemical_formula; // NMR/MS: The chemical formula of the identified compound
 	private String chemical_shift; // NMR: Chemical shift
@@ -195,7 +190,7 @@ public class Metabolite extends Identifiable{
 	public void setSmallmolecule_abundance_sub(String smallmolecule_abundance_sub) {
 		this.smallmolecule_abundance_sub = smallmolecule_abundance_sub;
 	}
-
+	@Column (name="SMA_STDEV_SUB")
 	public String getSmallmolecule_abundance_stdev_sub() {
 		return smallmolecule_abundance_stdev_sub;
 	}
@@ -204,7 +199,7 @@ public class Metabolite extends Identifiable{
 			String smallmolecule_abundance_stdev_sub) {
 		this.smallmolecule_abundance_stdev_sub = smallmolecule_abundance_stdev_sub;
 	}
-
+	@Column (name="SMA_STD_ERR_SUB")
 	public String getSmallmolecule_abundance_std_error_sub() {
 		return smallmolecule_abundance_std_error_sub;
 	}
