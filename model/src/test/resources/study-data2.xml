@@ -1,0 +1,45 @@
+<!--
+    Just a basic set of rows that are currently sufficient for all tests.
+    In future, maybe several datasets are required.
+-->
+<dataset>
+
+
+
+  <!--Private study-->
+	<STUDY
+			ID="100"
+			ACC="BII-ST-1"
+			TITLE="Subtle metabolic and liver gene transcriptional changes underlie diet-induced fatty liver susceptibility in insulin-resistant mice"
+			DESCRIPTION="Complex changes in gene expression are associated with insulin resistance and non-alcoholic fatty liver disease (NAFLD) promoted by feeding a high-fat diet (HFD). Functional genomic technologies to document molecular mechanisms."
+			OBJECTIVE="Testing this study"
+
+
+			SUBMISSIONDATE="2007-08-30"
+			RELEASEDATE="2007-08-30"
+            STATUS="1"/>
+
+	<Design
+			ID="200"
+			VALUE="treated vs untreated"
+			STUDY_ID="100"
+			/>
+
+	<ASSAYGROUP
+			ID="1"
+			FILENAME="assaygroup.txt"
+			STUDY_ID="100"/>
+			
+	<METABOLITE
+			ID="1"
+			DESCRIPTION="water"
+			IDENTIFIER="CHEBI:12345"
+			ASSAYGROUP_ID="1"/>
+ 	<METABOLITE
+			ID="2"
+			DESCRIPTION="ethanol"
+			IDENTIFIER="CHEBI:11111"
+			ASSAYGROUP_ID="1"/>
+ 
+
+</dataset>
