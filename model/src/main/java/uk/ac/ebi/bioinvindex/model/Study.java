@@ -126,8 +126,9 @@ public class Study extends HasReferences {
 	private String obfuscationCode = null;
 	
 	// Metaboligths persistance
-	//@IndexedEmbedded(prefix = "assay_group_")
-	//@Field(index = Index.UN_TOKENIZED, store = Store.YES)
+	// @IndexedEmbedded(prefix = "assay_group_")
+	@Field(index = Index.TOKENIZED, store = Store.YES)
+	@FieldBridge(impl = AssayGroupBridge.class)
 	private Collection <AssayGroup> assayGroups = new ArrayList<AssayGroup>(); 
 	
 	public Study() {

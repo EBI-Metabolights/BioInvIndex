@@ -47,20 +47,13 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.hibernate.search.bridge.FieldBridge;
 import org.hibernate.search.bridge.LuceneOptions;
-import uk.ac.ebi.bioinvindex.model.Annotation;
 import uk.ac.ebi.bioinvindex.model.AssayResult;
 import uk.ac.ebi.bioinvindex.model.processing.Assay;
-import uk.ac.ebi.bioinvindex.model.term.AnnotationTypes;
 import uk.ac.ebi.bioinvindex.model.xref.Xref;
 import uk.ac.ebi.bioinvindex.search.hibernatesearch.StudyBrowseField;
-import uk.ac.ebi.bioinvindex.utils.datasourceload.DataLocationManager;
 import uk.ac.ebi.bioinvindex.utils.processing.ProcessingUtils;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
 import java.util.*;
-import java.util.logging.Logger;
 
 /**
  * Creates a  String template: endpoint|technology|number|&&&acc1!!!url1&&&acc2!!!url2
@@ -70,87 +63,14 @@ import java.util.logging.Logger;
  */
 
 public class AssayBridge extends IndexFieldDelimiters implements FieldBridge {
-	/**
-	 * To test this you can invike this command (replace oracle with the correct profile element):
-	 * mvn clean test -Dtest=IndexBuilder -Pindex,oracle,index_local -DargLine="-Xms128m -Xmx512m" -e -DfailIfNoTests=false
-	 */
-	
-	
-	private static EntityManager em;
-	private static EntityManager getEntityManager(){
-	
-		//if (em == null){
-			EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("BIIEntityManager");
-	        em = entityManagerFactory.createEntityManager();
-		//}
-		return em;
-
-	}
-	
 
     public void set(String s, Object o, Document document, LuceneOptions luceneOptions) {
         Map<String, AssayTypeInfo> assayTypeToInfo = new HashMap<String, AssayTypeInfo>();
 
         Collection<Assay> assays = (Collection<Assay>) o;
-        Collection<String> assayGroupIds = new ArrayList<String>();
-        
-        DataLocationManager dataLocationManager = new DataLocationManager();
-        dataLocationManager.setEntityManager(getEntityManager());
 
         for (Assay assay : assays) {
 
-            if (itsMetabolomicsAssay(assay)) {
-            	
-            	// if we haven't already indexed it
-    			// Infer the assayGroup (file) the assay line belongs to
-    			String assayGroupId = inferAssayGroupId(assay);
-    			
-    			// If we haven't indexed it
-    			if (!assayGroupIds.contains(assayGroupId)){        	
-
-    				try{
-    				
-    				Collection<AssayResult> assayResults = ProcessingUtils.findAssayResultsFromAssay(assay);
-	
-	                //String fileLink = dataLocationManager.getDataLocationLink(assay.getMeasurement().getName(), assay.getTechnologyName(), assay.getStudy().getObfuscationCode(),
-	                //        AnnotationTypes.GENERIC_DATA_FILE_LINK);
-	
-	                //System.out.println("File link: " + fileLink);
-	
-	                String pathLink = dataLocationManager.getDataLocationLink(assay.getMeasurement().getName(), assay.getTechnologyName(), assay.getStudy().getObfuscationCode(),
-	                        AnnotationTypes.GENERIC_DATA_FILE_PATH);
-	
-	                System.out.println("Path link: " + pathLink);
-	
-	                boolean breakFlag = false;
-	                
-	                for (AssayResult result : assayResults) {
-	                    for (Annotation annotation : result.getData().getAnnotation("metaboliteFile")) {
-	                        System.out.printf("Type: %s -> Value: %s\n", annotation.getType().getValue(), annotation.getText());
-	                        MetaboLightsIndexer.indexMetaboliteFile(pathLink.replace("${study-acc}",
-	                                assay.getStudy().getAcc() + "_" + assay.getStudy().getObfuscationCode()) + "/" +  annotation.getText(),
-	                                document,
-	                                luceneOptions);
-	                        
-	                        breakFlag = true;
-	                        
-	                        // This should be done only once for the whole assayGroup
-	                        if (breakFlag) break;
-	                    }
-	                    
-	                    if (breakFlag) break;
-	                }
-	                
-	             // Add the assayGroup as indexed
-				 assayGroupIds.add(assayGroupId);
-    			
-    			 } catch (Exception e){
-    				 System.out.println("Exception indexing metabolites: \n\n" + e.getMessage());
-    			 }
-				 
-				 
-    			}
-            }
 
             String type = buildType(assay);
 
@@ -158,20 +78,15 @@ public class AssayBridge extends IndexFieldDelimiters implements FieldBridge {
                 AssayTypeInfo info = new AssayTypeInfo();
                 assayTypeToInfo.put(type, info);
             }
-
-            for (Xref xref : assay.getXrefs()) {
-                System.out.println("Adding XREF to AssayTypeInfo: " + xref.getSource().getAcc() + "(" + xref.getAcc() + ") for " + type);
-
-                StringBuilder sb = new StringBuilder();
-                sb.append("xref(").append(xref.getAcc()).append("->");
-                sb.append(xref.getSource().getAcc()).append(")");
-
-                assayTypeToInfo.get(type).addAccession(sb.toString());
+            // only go looking for assay results if there is a material associated with the assay.
+            if (assay.getMaterial() != null) {
+                Collection<AssayResult> assayResults = ProcessingUtils.findAssayResultsFromAssay(assay);
+                createAssayExternalLinks(assayTypeToInfo, assayResults, type);
             }
+            createXrefs(assayTypeToInfo, assay, type);
 
             assayTypeToInfo.get(type).increaseCount();
         }
-        // each data link should be stored perhaps, or at least whatever is required to make it display in the Study page.
 
         for (String type : assayTypeToInfo.keySet()) {
             StringBuilder fullInfo = new StringBuilder();
@@ -201,15 +116,42 @@ public class AssayBridge extends IndexFieldDelimiters implements FieldBridge {
             Field fvField = new Field(StudyBrowseField.ASSAY_INFO.getName(), fullInfo.toString(), luceneOptions.getStore(), luceneOptions.getIndex());
             document.add(fvField);
         }
+    }
 
-        em.close();
+    private void createXrefs(Map<String, AssayTypeInfo> assayTypeToInfo, Assay assay, String type) {
+        for (Xref xref : assay.getXrefs()) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("xref(").append(xref.getAcc()).append("->");
+            sb.append(xref.getSource().getAcc()).append(")");
+            assayTypeToInfo.get(type).addAccession(sb.toString());
+        }
+    }
+
+    private void createAssayExternalLinks(Map<String, AssayTypeInfo> assayTypeToInfo, Collection<AssayResult> assayResults, String type) {
+        Set<String> addedLinks = new HashSet<String>();
+        for (AssayResult result : assayResults) {
+            // we're only looking at links...should accommodate webdav etc. too
+            if (result.getData() != null) {
+                String dataFileName = result.getData().getName() == null ? "" : result.getData().getName();
+                if (dataFileName.matches("(http|ftp|https).*") && dataFileName.contains("/")) {
+                    // we only store the folder since that will take us to multiple file locations. Otherwise we'd have too
+                    // many individual links pointing to the same place.
+                    String folder = dataFileName.substring(0, result.getData().getName().lastIndexOf("/"));
+                    if (!addedLinks.contains(folder)) {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("link(").append(folder).append("->");
+                        String dataFileType = result.getData().getType().getName() == null ? "" : result.getData().getType().getName();
+                        sb.append(dataFileType).append(")");
+                        addedLinks.add(folder);
+                        assayTypeToInfo.get(type).addAccession(sb.toString());
+                    }
+                }
+            }
+        }
     }
 
     private String buildType(Assay assay) {
         return assay.getMeasurement().getName() + "|" + assay.getTechnologyName();
-    }
-    private boolean itsMetabolomicsAssay(Assay assay){
-    	return (assay.getTechnologyName().equals("mass spectrometry") || assay.getTechnologyName().equals("NMR spectroscopy"));
     }
 
 
@@ -235,25 +177,4 @@ public class AssayBridge extends IndexFieldDelimiters implements FieldBridge {
             accessions.add(acc);
         }
     }
-	/**
-	 * Assay are really assay lines. Our index is for the whole group of assay lines that has no correspondence in the model (so far)
-	 * This method will return a String representing the assay group (file) the assay line belongs to.
-	 * @param assay (This represent an assay line!!!)
-	 * @return
-	 */
-	public static String inferAssayGroupId(Assay assay){
-		// Get the assay file name
-		for (Annotation annotation: assay.getAnnotations()){
-			if (annotation.getType().getValue().equals("assayFileId")){
-				return annotation.getText();
-			}
-		}
-		return "";
-		
-		
-		//TODO: if there are 2 assayGroups (files) within the same study and with the same technology, measurement, and platform.
-		//return (assay.getTechnologyName() + assay.getMeasurement().getName() + assay.getAssayPlatform() );
-		
-	}
-
 }

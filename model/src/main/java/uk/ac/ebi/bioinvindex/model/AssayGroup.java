@@ -16,6 +16,7 @@ public class AssayGroup extends Identifiable{
 	//@Field (name="filename", index = Index.TOKENIZED, store = Store.YES)
 	private String fileName;
 
+	public AssayGroup(){}
 	public AssayGroup(String fileName){
 		this.fileName = fileName;
 	}

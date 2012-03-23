@@ -33,6 +33,7 @@ public class Metabolite extends Identifiable{
 	@ContainedIn
 	private AssayGroup assayGroup;
 	
+	public Metabolite(){}
 	public Metabolite(AssayGroup assayGroup, String description, String identifier){
 		this.assayGroup = assayGroup;
 		this.description = description;
