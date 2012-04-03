@@ -58,6 +58,7 @@ import org.junit.Test;
 import uk.ac.ebi.bioinvindex.dao.ejb3.DaoFactory;
 import uk.ac.ebi.bioinvindex.model.AssayGroup;
 import uk.ac.ebi.bioinvindex.model.Metabolite;
+import uk.ac.ebi.bioinvindex.model.MetaboliteSample;
 import uk.ac.ebi.bioinvindex.model.Study;
 import uk.ac.ebi.bioinvindex.model.term.Design;
 import uk.ac.ebi.bioinvindex.utils.test.TransactionalDBUnitEJB3DAOTest;
@@ -120,6 +121,12 @@ public class AssayGroupPersistenceTest extends TransactionalDBUnitEJB3DAOTest
 		metabolite1.setSmallmolecule_abundance_stdev_sub("smallmolecule_abundance_stdev_sub");
 		metabolite1.setSmallmolecule_abundance_sub("smallmolecule_abundance_sub");
 		
+		MetaboliteSample ms = new MetaboliteSample(metabolite1,"",0);
+		ms.setSampleName("SampleName");
+		ms.setValue(1.34);
+		
+		metabolite1.getMetaboliteSamples().add(ms);
+		
 		ag1.getMetabolites().add(metabolite1);
 		
 		AssayGroup ag2 = new AssayGroup("AssayGroup2.txt");
@@ -161,6 +168,11 @@ public class AssayGroupPersistenceTest extends TransactionalDBUnitEJB3DAOTest
 				assertEquals( "database", met.getDatabase());
 				assertEquals( "database_version", met.getDatabase_version());
 			
+				// There must be one MetaboliteSample, so far
+				for (MetaboliteSample msample: met.getMetaboliteSamples() ){
+					assertEquals("SampleName", msample.getSampleName());
+					assertEquals(1.34, msample.getValue(),0);
+				}
 				
 			}
 			

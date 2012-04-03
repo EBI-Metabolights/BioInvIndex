@@ -1,5 +1,8 @@
 package uk.ac.ebi.bioinvindex.model;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import javax.persistence.*;
 
 import org.hibernate.search.annotations.*;
@@ -9,6 +12,8 @@ import org.hibernate.search.annotations.*;
 @Indexed(index = "bii")
 public class Metabolite extends Identifiable{
 
+	private Collection<MetaboliteSample> msMetSamples = new ArrayList<MetaboliteSample>();
+	
 	private String description; //	NMR/MS: The small molecule's description/name.  Multiple values separated with | 
 	private String identifier; //A list of | separated possible identifiers for these small molecules. e.g. "KEGG:C000017|CHEBI:12345"
 	private String unit_id; // NMR/MS: The concatenation of the sample id plus assay id to uniquely identify that sample and run on the machine(or mass concatenated with reten tion index for unknowns)
@@ -48,6 +53,18 @@ public class Metabolite extends Identifiable{
 	protected void setAssayGroup(AssayGroup assayGroup) {
 		this.assayGroup = assayGroup;
 	}
+	
+	@OneToMany(targetEntity = MetaboliteSample.class,
+			cascade = {CascadeType.ALL})
+	@JoinColumn(name = "METABOLITE_ID", nullable = true)
+	public Collection<MetaboliteSample> getMetaboliteSamples() {
+		return msMetSamples;
+	}
+
+	public void setMetaboliteSamples(Collection<MetaboliteSample> msMetaboliteSamples) {
+		this.msMetSamples = msMetaboliteSamples;
+	}
+
 
 	public String getDescription() {
 		return description;
