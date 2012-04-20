@@ -121,9 +121,9 @@ public class AssayGroupPersistenceTest extends TransactionalDBUnitEJB3DAOTest
 		metabolite1.setSmallmolecule_abundance_stdev_sub("smallmolecule_abundance_stdev_sub");
 		metabolite1.setSmallmolecule_abundance_sub("smallmolecule_abundance_sub");
 		
-		MetaboliteSample ms = new MetaboliteSample(metabolite1,"",0);
+		MetaboliteSample ms = new MetaboliteSample(metabolite1,"","0");
 		ms.setSampleName("SampleName");
-		ms.setValue(1.34);
+		ms.setValue("1.34");
 		
 		metabolite1.getMetaboliteSamples().add(ms);
 		
@@ -171,7 +171,7 @@ public class AssayGroupPersistenceTest extends TransactionalDBUnitEJB3DAOTest
 				// There must be one MetaboliteSample, so far
 				for (MetaboliteSample msample: met.getMetaboliteSamples() ){
 					assertEquals("SampleName", msample.getSampleName());
-					assertEquals(1.34, msample.getValue(),0);
+					assertEquals("1.34", msample.getValue(),0);
 				}
 				
 			}

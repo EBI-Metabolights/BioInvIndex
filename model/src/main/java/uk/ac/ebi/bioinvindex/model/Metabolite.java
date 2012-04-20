@@ -34,6 +34,7 @@ public class Metabolite extends Identifiable{
 	private String smallmolecule_abundance_sub; // The small molecule’s intensity in the respective subsample, [1-n]
 	private String smallmolecule_abundance_stdev_sub; // The standard deviation of the small molecule’s abundance, [1-n]
     private String smallmolecule_abundance_std_error_sub; // The standard error of the small molecule’s abundance, [1-n]
+    private String chebiId; //Chebi Id, Initially it will be empty. It will have a value when we will curate this metabolite and therefore we, after the submission, will have a chebi id for the metabolite.
 	
 	@ContainedIn
 	private AssayGroup assayGroup;
@@ -226,5 +227,12 @@ public class Metabolite extends Identifiable{
 			String smallmolecule_abundance_std_error_sub) {
 		this.smallmolecule_abundance_std_error_sub = smallmolecule_abundance_std_error_sub;
 	}
+	public String getChebiId() {
+		return chebiId;
+	}
 
+	public void setChebiId(String chebiId) {
+		this.chebiId = chebiId;
+	}
+	
 }

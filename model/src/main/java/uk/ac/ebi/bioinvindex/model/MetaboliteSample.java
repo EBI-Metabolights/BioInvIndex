@@ -10,13 +10,13 @@ import org.hibernate.search.annotations.*;
 public class MetaboliteSample extends Identifiable{
 
 	private String sampleName; //	NMR/MS: The small molecule's description/name.  Multiple values separated with | 
-	private double value; 
+	private String value; 
 	
 	@ContainedIn
 	private Metabolite metabolite;
 	
 	public MetaboliteSample(){}
-	public MetaboliteSample(Metabolite met, String sampleName, double value){
+	public MetaboliteSample(Metabolite met, String sampleName, String value){
 		this.sampleName = sampleName;
 		this.value = value;
 		this.metabolite = met;
@@ -39,11 +39,11 @@ public class MetaboliteSample extends Identifiable{
 		this.sampleName = sampleName;
 	}
 
-	public double getValue() {
+	public String getValue() {
 		return value;
 	}
 
-	public void setValue(double value) {
+	public void setValue(String value) {
 		this.value = value;
 	}
 }
