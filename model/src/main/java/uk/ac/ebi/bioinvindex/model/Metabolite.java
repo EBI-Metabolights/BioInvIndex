@@ -145,7 +145,7 @@ public class Metabolite extends Identifiable{
 	public void setRetention_time(String retention_time) {
 		this.retention_time = retention_time;
 	}
-
+	@Column (name="MOL_DATABASE")
 	public String getDatabase() {
 		return database;
 	}

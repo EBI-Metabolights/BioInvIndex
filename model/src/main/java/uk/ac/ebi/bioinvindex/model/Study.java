@@ -193,7 +193,7 @@ public class Study extends HasReferences {
 	
 	// Metabolights persistance
 	@OneToMany(targetEntity = AssayGroup.class, 
-			cascade = {CascadeType.ALL})
+			cascade = {CascadeType.PERSIST})
 	@JoinColumn(name= "study_id")
 	
 	public Collection<AssayGroup> getAssayGroups() {

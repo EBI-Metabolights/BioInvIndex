@@ -44,6 +44,7 @@
 package uk.ac.ebi.bioinvindex.unloading;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -57,12 +58,15 @@ import org.apache.log4j.Logger;
 
 import uk.ac.ebi.bioinvindex.dao.ejb3.DaoFactory;
 import uk.ac.ebi.bioinvindex.model.Annotation;
+import uk.ac.ebi.bioinvindex.model.AssayGroup;
 import uk.ac.ebi.bioinvindex.model.AssayResult;
 import uk.ac.ebi.bioinvindex.model.Contact;
 import uk.ac.ebi.bioinvindex.model.Data;
 import uk.ac.ebi.bioinvindex.model.Identifiable;
 import uk.ac.ebi.bioinvindex.model.Investigation;
 import uk.ac.ebi.bioinvindex.model.Material;
+import uk.ac.ebi.bioinvindex.model.Metabolite;
+import uk.ac.ebi.bioinvindex.model.MetaboliteSample;
 import uk.ac.ebi.bioinvindex.model.Protocol;
 import uk.ac.ebi.bioinvindex.model.Publication;
 import uk.ac.ebi.bioinvindex.model.Study;
@@ -148,6 +152,8 @@ public class UnloadManager {
 
     private Set<String> messages = new HashSet<String>();
 
+    protected ArrayList<String> timeStamptCheckExclusionList = new ArrayList<String>();
+    
     protected final static Logger log = Logger.getLogger(UnloadManager.class);
 
     /**
@@ -207,7 +213,11 @@ public class UnloadManager {
                     new UnloaderMapping(ReferenceSource.class, ReferenceSourceUnloader.class),
                     new UnloaderMapping(OntologyTerm.class, OntologyTermUnloader.class),
                     new UnloaderMapping(OntologyEntry.class, OntologyEntryUnloader.class),
-                    new UnloaderMapping(Xref.class, XrefUnloader.class)
+                    new UnloaderMapping(Xref.class, XrefUnloader.class),
+                    // Pablo Conesa, add unloader for metabolites
+                    new UnloaderMapping(AssayGroup.class, AssayGroupUnloader.class),
+                    new UnloaderMapping(Metabolite.class, MetaboliteUnloader.class),
+                    new UnloaderMapping(MetaboliteSample.class, MetaboliteSampleUnloader.class)
             };
 
     /**
@@ -261,13 +271,15 @@ public class UnloadManager {
         if (id == null) return false;
         final Timestamp ts = object.getSubmissionTs();
 
+        // Avoid check of timestamp...for metabolights entities that doesn't have it.
+        if (checkTimeStamp(object.getClass().getName())){
 
-        if (submissionTs != null) {
-            if (!(submissionTs.equals(ts) || additionalTs != null && additionalTs.equals(ts))
-                    )
-                return false;
+	        if (submissionTs != null) {
+	            if (!(submissionTs.equals(ts) || additionalTs != null && additionalTs.equals(ts))
+	                    )
+	                return false;
+	        }
         }
-
 
         Map<Long, T> deletedIds = (HashMap<Long, T>) deletionQueue.get(type);
         if (deletedIds == null) {
@@ -285,7 +297,11 @@ public class UnloadManager {
             log.trace("queuing the deletion of <" + type.getSimpleName() + ", " + object.getId() + ">, result is: " + result);
         return result;
     }
-
+    
+    private boolean checkTimeStamp(String className){
+    	
+    	return  !timeStamptCheckExclusionList.contains(className);
+    }
     /**
      * A wrapper of {@link #queueSimple(Class, Identifiable) queueSimple ( object.getClass(), object )}
      */
@@ -455,6 +471,12 @@ public class UnloadManager {
                     "Internal Error: The UnloaderManager can be invoked only once, reinstantiate it for performing another unloading"
             );
 
+        // Before deleting the study..for metabolites
+        deleteType(MetaboliteSample.class);
+        deleteType(Metabolite.class);
+        deleteType(AssayGroup.class);
+        
+        
         deleteType(Publication.class);
         deleteType(Contact.class);
         deleteType(PublicationStatus.class);

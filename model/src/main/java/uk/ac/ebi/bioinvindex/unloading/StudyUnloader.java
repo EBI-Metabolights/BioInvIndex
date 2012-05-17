@@ -91,6 +91,10 @@ public class StudyUnloader extends AbstractReferrerUnloader<Study>
 		unloadManager.queueAll ( study.getAssays () );
 		unloadManager.queueAll ( study.getAssayResults () );
 		unloadManager.queueAll ( study.getInvestigations () );
+		
+		unloadManager.queueAll ( study.getAssayGroups() );
+		study.getAssayGroups().clear();
+		
 
 		// A quick way to get rid of all the nodes in the experimental pipeline associated to this study
 		Query q = unloadManager.getDaoFactory ().getEntityManager ().createQuery ( 
