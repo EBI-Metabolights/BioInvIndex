@@ -56,6 +56,8 @@ import javax.persistence.Query;
 
 import org.apache.log4j.Level;
 
+import uk.ac.ebi.bioinvindex.model.AssayGroup;
+import uk.ac.ebi.bioinvindex.model.Metabolite;
 import uk.ac.ebi.bioinvindex.model.Study;
 import uk.ac.ebi.bioinvindex.model.processing.GraphElement;
 import uk.ac.ebi.bioinvindex.model.processing.Node;
@@ -93,9 +95,16 @@ public class StudyUnloader extends AbstractReferrerUnloader<Study>
 		unloadManager.queueAll ( study.getInvestigations () );
 		
 		unloadManager.queueAll ( study.getAssayGroups() );
-		study.getAssayGroups().clear();
 		
-
+		// For metaboLights clean collections?
+		for (AssayGroup ag: study.getAssayGroups()){
+			for (Metabolite met:ag.getMetabolites()){
+				met.getMetaboliteSamples().clear();
+			}
+			ag.getMetabolites().clear();
+		}
+		study.getAssayGroups().clear();
+ 
 		// A quick way to get rid of all the nodes in the experimental pipeline associated to this study
 		Query q = unloadManager.getDaoFactory ().getEntityManager ().createQuery ( 
 			"SELECT ge FROM " + GraphElement.class.getName () + " ge WHERE ge.study.id = :studyId" 

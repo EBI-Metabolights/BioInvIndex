@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>uk.ac.ebi.bioinvindex</groupId>
 	<artifactId>model</artifactId>
-	<version>1.4.35-P-SNAPSHOT</version>
+	<version>1.4.36-P-SNAPSHOT</version>
 	<packaging>ejb</packaging>
 	<name>Bio-Investigation Index (EJB) Model</name>
 
