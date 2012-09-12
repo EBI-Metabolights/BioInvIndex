@@ -80,8 +80,15 @@ public class AssayBridge extends IndexFieldDelimiters implements FieldBridge {
             }
             // only go looking for assay results if there is a material associated with the assay.
             if (assay.getMaterial() != null) {
-                Collection<AssayResult> assayResults = ProcessingUtils.findAssayResultsFromAssay(assay);
-                createAssayExternalLinks(assayTypeToInfo, assayResults, type);
+            	// TODO: Avoid deletion error (story ' Christophe Junot's study can not be resubmitted')
+            	// https://www.pivotaltracker.com/projects/620203#!/stories/35089785
+            	try{
+	                Collection<AssayResult> assayResults = ProcessingUtils.findAssayResultsFromAssay(assay);
+	                createAssayExternalLinks(assayTypeToInfo, assayResults, type);
+            	}catch(Exception e){
+            		// It it fails continue...fixes the bug when unloading an study and the call to findAssayResultsFromAssay end up in an exception:
+            		// NullPointerException: at org.hibernate.event.def.DefaultInitializeCollectionEventListener.initializeCollectionFromCache(DefaultInitializeCollectionEventListener.java:116)
+            	}
             }
             createXrefs(assayTypeToInfo, assay, type);
 

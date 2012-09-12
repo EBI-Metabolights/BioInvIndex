@@ -35,6 +35,7 @@ public class Metabolite extends Identifiable{
 	private String smallmolecule_abundance_stdev_sub; // The standard deviation of the small moleculeÕs abundance, [1-n]
     private String smallmolecule_abundance_std_error_sub; // The standard error of the small moleculeÕs abundance, [1-n]
     private String chebiId; //Chebi Id, Initially it will be empty. It will have a value when we will curate this metabolite and therefore we, after the submission, will have a chebi id for the metabolite.
+    private String cleanedDescription;
 	
 	@ContainedIn
 	private AssayGroup assayGroup;
@@ -73,6 +74,23 @@ public class Metabolite extends Identifiable{
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+	/**
+	 * TODO: Have cleaned description for story Duplicated metabolites and about half? of them do not match any study.
+	 * https://www.pivotaltracker.com/projects/620203#!/stories/35586843
+	 * Cleanned description is a way of normalizing descriptions that differ in spaces like:
+	 * "(2-methoxyethoxy)propanoic acid "  --> no space between ) and propanoic
+	 * "(2-methoxyethoxy) propanoic acid" --> with space and no space at the end
+	 * "(2-methoxyethoxy) propanoic acid " --> with space and no space at the end
+	 * @return
+	 */
+	public String getCleanedDescription() {
+		
+		if (cleanedDescription == null)
+		{
+			cleanedDescription = description.replaceAll(" ", "");
+		}
+		return cleanedDescription;
 	}
 
 	public String getIdentifier() {
