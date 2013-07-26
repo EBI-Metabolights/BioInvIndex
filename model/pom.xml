@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>uk.ac.ebi.bioinvindex</groupId>
 	<artifactId>model</artifactId>
-	<version>1.4.51-SNAPSHOT</version>
+	<version>1.4.52-SNAPSHOT</version>
 	<packaging>ejb</packaging>
 	<name>Bio-Investigation Index (EJB) Model</name>
 
@@ -126,22 +126,22 @@
                </dependency>
 
 
-		<!-- <dependency> <groupId>org.hibernate</groupId> <artifactId>hibernate-annotations</artifactId> 
-			</dependency> <dependency> <groupId>org.hibernate</groupId> <artifactId>hibernate-entitymanager</artifactId> 
-			<version>${hibernate-entitymanager.version}</version> </dependency> <dependency> 
-			<groupId>org.hibernate</groupId> <artifactId>hibernate-search</artifactId> 
-			<version>${hibernate-search.version}</version> </dependency> <dependency> 
-			<groupId>com.h2database</groupId> <artifactId>h2</artifactId> <version>1.2.132</version> 
-			</dependency> <dependency> <groupId>org.dbunit</groupId> <artifactId>dbunit</artifactId> 
-			<version>${dbunit.version}</version> <scope>test</scope> </dependency> <dependency> 
-			<groupId>junit</groupId> <artifactId>junit</artifactId> <version>${junit.version}</version> 
-			<scope>test</scope> </dependency> <dependency> <groupId>commons-beanutils</groupId> 
-			<artifactId>commons-beanutils</artifactId> <version>1.7.0</version> </dependency> 
-			<dependency> <groupId>commons-lang</groupId> <artifactId>commons-lang</artifactId> 
-			<version>2.3</version> </dependency> <dependency> <groupId>commons-io</groupId> 
-			<artifactId>commons-io</artifactId> <version>1.4</version> </dependency> 
-			<dependency> <groupId>org.slf4j</groupId> <artifactId>slf4j-log4j12</artifactId> 
-			<version>1.4.2</version> </dependency> <dependency> <groupId>org.slf4j</groupId> 
+		<!-- <dependency> <groupId>org.hibernate</groupId> <artifactId>hibernate-annotations</artifactId>
+			</dependency> <dependency> <groupId>org.hibernate</groupId> <artifactId>hibernate-entitymanager</artifactId>
+			<version>${hibernate-entitymanager.version}</version> </dependency> <dependency>
+			<groupId>org.hibernate</groupId> <artifactId>hibernate-search</artifactId>
+			<version>${hibernate-search.version}</version> </dependency> <dependency>
+			<groupId>com.h2database</groupId> <artifactId>h2</artifactId> <version>1.2.132</version>
+			</dependency> <dependency> <groupId>org.dbunit</groupId> <artifactId>dbunit</artifactId>
+			<version>${dbunit.version}</version> <scope>test</scope> </dependency> <dependency>
+			<groupId>junit</groupId> <artifactId>junit</artifactId> <version>${junit.version}</version>
+			<scope>test</scope> </dependency> <dependency> <groupId>commons-beanutils</groupId>
+			<artifactId>commons-beanutils</artifactId> <version>1.7.0</version> </dependency>
+			<dependency> <groupId>commons-lang</groupId> <artifactId>commons-lang</artifactId>
+			<version>2.3</version> </dependency> <dependency> <groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId> <version>1.4</version> </dependency>
+			<dependency> <groupId>org.slf4j</groupId> <artifactId>slf4j-log4j12</artifactId>
+			<version>1.4.2</version> </dependency> <dependency> <groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId> <version>1.4.2</version> </dependency> -->
 
 	</dependencies>
@@ -218,7 +218,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
-					<!-- If I don't use one new JVM instance per test, I get the error: 
+					<!-- If I don't use one new JVM instance per test, I get the error:
 						"Timeout trying to lock table REFERENCE_SOURCE". TODO: Maybe is the H2 version? -->
 					<forkMode>pertest</forkMode>
 					<printSummary>true</printSummary>
@@ -245,10 +245,10 @@
 
 	<reporting>
 		<plugins>
-			<!-- You need this in fork mode, since surefire doesn't generate a good 
-				summary in that mode you'll find the report in target/site Just issue maven 
-				test site to have the report printed under target/site WARNING: This require 
-				that you increase the default memory options, eg: export MAVEN_OPTS="-Xms256m 
+			<!-- You need this in fork mode, since surefire doesn't generate a good
+				summary in that mode you'll find the report in target/site Just issue maven
+				test site to have the report printed under target/site WARNING: This require
+				that you increase the default memory options, eg: export MAVEN_OPTS="-Xms256m
 				-Xmx1024m -XX:PermSize=64m -XX:MaxPermSize=128m" -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -265,7 +265,7 @@
 
 
 	<profiles>
-		<!-- Use it this way: mvn -Ph2,create_test_user -Dmaven.test.skip=true 
+		<!-- Use it this way: mvn -Ph2,create_test_user -Dmaven.test.skip=true
 			install exec:java Default test user(s) is/are defined in uk.ac.ebi.bioinvindex.utils.security.TestUserCreator -->
 		<profile>
 			<id>create_test_user</id>

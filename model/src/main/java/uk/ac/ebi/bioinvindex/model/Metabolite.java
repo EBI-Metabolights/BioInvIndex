@@ -1,5 +1,6 @@
 package uk.ac.ebi.bioinvindex.model;
 
+import org.hibernate.annotations.Where;
 import org.hibernate.search.annotations.ContainedIn;
 import org.hibernate.search.annotations.Indexed;
 
@@ -13,7 +14,7 @@ import java.util.Collection;
 public class Metabolite extends Identifiable{
 
 	private Collection<uk.ac.ebi.bioinvindex.model.MetaboliteSample> msMetSamples = new ArrayList<uk.ac.ebi.bioinvindex.model.MetaboliteSample>();
-	
+
 	private String description; //	V1.  NMR/MS: The small molecule's description/name.  Multiple values separated with |
     //private String metabolite_identification; //	>V1. NMR/MS: The small molecule's description/name.  Multiple values separated with |
 	private String identifier; // V1. A list of | separated possible identifiers for these small molecules. e.g. "KEGG:C000017|CHEBI:12345"
@@ -40,17 +41,17 @@ public class Metabolite extends Identifiable{
     private String smallmolecule_abundance_std_error_sub; // The standard error of the small molecule�s abundance, [1-n]
     private String chebiId; //Chebi Id, Initially it will be empty. It will have a value when we will curate this metabolite and therefore we, after the submission, will have a chebi id for the metabolite.
     private String cleanDescription; //This is the description without additional spaces and special characters
-	
+
 	@ContainedIn
 	private uk.ac.ebi.bioinvindex.model.AssayGroup assayGroup;
-	
+
 	public Metabolite(){}
 	public Metabolite(uk.ac.ebi.bioinvindex.model.AssayGroup assayGroup, String description, String identifier){
 		this.assayGroup = assayGroup;
 		this.description = description;
 		this.identifier = identifier;
 	}
-	
+
 	@ManyToOne(targetEntity = uk.ac.ebi.bioinvindex.model.AssayGroup.class)
 	@JoinColumn(name = "ASSAYGROUP_ID", nullable = false)
 	public uk.ac.ebi.bioinvindex.model.AssayGroup getAssayGroup() {
@@ -60,10 +61,11 @@ public class Metabolite extends Identifiable{
 	protected void setAssayGroup(uk.ac.ebi.bioinvindex.model.AssayGroup assayGroup) {
 		this.assayGroup = assayGroup;
 	}
-	
+
 	@OneToMany(targetEntity = uk.ac.ebi.bioinvindex.model.MetaboliteSample.class,
 			cascade = {CascadeType.ALL})
 	@JoinColumn(name = "METABOLITE_ID", nullable = true)
+    @Where(clause="value is not null")
 	public Collection<uk.ac.ebi.bioinvindex.model.MetaboliteSample> getMetaboliteSamples() {
 		return msMetSamples;
 	}
@@ -327,5 +329,5 @@ public class Metabolite extends Identifiable{
 	public void setChebiId(String chebiId) {
 		this.chebiId = chebiId;
 	}
-	
+
 }
