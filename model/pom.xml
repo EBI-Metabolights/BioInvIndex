@@ -5,8 +5,8 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>uk.ac.ebi.bioinvindex</groupId>
-	<artifactId>model</artifactId>
-	<version>${bii.version}</version>
+	<artifactId>model_MTBLS</artifactId>
+	<version>1.6</version>
 	<packaging>ejb</packaging>
 	<name>Bio-Investigation Index (EJB) Model</name>
 
@@ -193,7 +193,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
-					<!-- If I don't use one new JVM instance per test, I get the error: 
+					<!-- If I don't use one new JVM instance per test, I get the error:
 						"Timeout trying to lock table REFERENCE_SOURCE". TODO: Maybe is the H2 version? -->
 					<forkMode>pertest</forkMode>
 					<printSummary>true</printSummary>
@@ -220,10 +220,10 @@
 
 	<reporting>
 		<plugins>
-			<!-- You need this in fork mode, since surefire doesn't generate a good 
-				summary in that mode you'll find the report in target/site Just issue maven 
-				test site to have the report printed under target/site WARNING: This require 
-				that you increase the default memory options, eg: export MAVEN_OPTS="-Xms256m 
+			<!-- You need this in fork mode, since surefire doesn't generate a good
+				summary in that mode you'll find the report in target/site Just issue maven
+				test site to have the report printed under target/site WARNING: This require
+				that you increase the default memory options, eg: export MAVEN_OPTS="-Xms256m
 				-Xmx1024m -XX:PermSize=64m -XX:MaxPermSize=128m" -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -240,7 +240,7 @@
 
 
 	<profiles>
-		<!-- Use it this way: mvn -Ph2,create_test_user -Dmaven.test.skip=true 
+		<!-- Use it this way: mvn -Ph2,create_test_user -Dmaven.test.skip=true
 			install exec:java Default test user(s) is/are defined in uk.ac.ebi.bioinvindex.utils.security.TestUserCreator -->
 		<profile>
 			<id>create_test_user</id>
