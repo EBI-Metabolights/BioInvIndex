@@ -17,7 +17,7 @@
                 <jdbc.artifactId>h2</jdbc.artifactId>
                 <jdbc.version>1.2.132</jdbc.version>
                 <jdbc.driverClassName>org.h2.Driver</jdbc.driverClassName>
-                <jdbc.url><![CDATA[jdbc:h2:/tmp/bii/testdb/bioinvindex]]></jdbc.url>
+                <jdbc.url><![CDATA[jdbc:h2:/tmp/bii/testdb/bioinvindex;MVCC=TRUE]]></jdbc.url>
                 <!--  jdbc.url><![CDATA[jdbc:h2:tcp://localhost/biitestdb]]></jdbc.url -->
                 <jdbc.username>sa</jdbc.username>
                 <jdbc.password/>
@@ -125,7 +125,7 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
-                <hibernate.search.default.indexBase>/Users/eamonnmaguire/dev/bii-test</hibernate.search.default.indexBase>
+                <hibernate.search.default.indexBase>/tmp/lucene/bii-local</hibernate.search.default.indexBase>
             </properties>
         </profile>
 
@@ -135,7 +135,7 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
-                <hibernate.search.default.indexBase>/Users/eamonnmaguire/dev/index-test-june</hibernate.search.default.indexBase>
+                <hibernate.search.default.indexBase>/tmp/bii/luceneindex</hibernate.search.default.indexBase>
             </properties>
         </profile>
 
@@ -145,7 +145,7 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
-                <hibernate.search.default.indexBase>/nfs/ma/home/bii_data/bii-index</hibernate.search.default.indexBase>
+                <hibernate.search.default.indexBase>/tmp/lucene/bii-prod</hibernate.search.default.indexBase>
             </properties>
         </profile>
 

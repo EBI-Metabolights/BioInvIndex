@@ -43,15 +43,11 @@ package uk.ac.ebi.bioinvindex.persistence;
  * EU NuGO [NoE 503630](http://www.nugo.org/everyone) projects and in part by EMBL-EBI.
  */
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Level;
 import uk.ac.ebi.bioinvindex.dao.StudyDAO;
 import uk.ac.ebi.bioinvindex.dao.ejb3.DaoFactory;
-import uk.ac.ebi.bioinvindex.model.AssayGroup;
-import uk.ac.ebi.bioinvindex.model.AssayResult;
-import uk.ac.ebi.bioinvindex.model.Contact;
-import uk.ac.ebi.bioinvindex.model.Investigation;
-import uk.ac.ebi.bioinvindex.model.Protocol;
-import uk.ac.ebi.bioinvindex.model.Publication;
-import uk.ac.ebi.bioinvindex.model.Study;
+import uk.ac.ebi.bioinvindex.model.*;
 import uk.ac.ebi.bioinvindex.model.processing.Assay;
 import uk.ac.ebi.bioinvindex.model.term.Design;
 
@@ -59,9 +55,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Level;
 
 /**
  * Persists a {@link Study}.
@@ -80,9 +73,6 @@ public class StudyPersister extends AccessiblePersister<Study>
 	private final PublicationPersister pubPersister; 
 	private final ContactPersister contactPersister; 
 	
-	// Metaboligths persistance
-	//private final AssayGroupPersister assayGroupPersister;
-	
 	private List<Investigation> backupInvestigations;
 	
 	public StudyPersister ( DaoFactory daoFactory, Timestamp submissionTs ) 
@@ -96,10 +86,6 @@ public class StudyPersister extends AccessiblePersister<Study>
 		investigationPersister = new InvestigationPersister ( daoFactory, submissionTs );
 		pubPersister = new PublicationPersister ( daoFactory, submissionTs );
 		contactPersister = new ContactPersister ( daoFactory, submissionTs );
-		
-		// Metaboligths persistance
-		//assayGroupPersister = new AssayGroupPersister(daoFactory, submissionTs);
-		
 		logLevel = Level.DEBUG;
 	}
 
@@ -127,12 +113,7 @@ public class StudyPersister extends AccessiblePersister<Study>
 				study.addProtocol ( protocolDB );
 			}
 		}
-	
-		
-		// Now work on the investigations, we must save them and temporary remove, because of 
-		// referential integrity checkings. 
-		// TODO: is there a smarter way?
-		//
+
 		this.backupInvestigations = new ArrayList<Investigation> ( study.getInvestigations () );
 		for ( Investigation investigation: backupInvestigations )
 			if ( investigation.getId () == null )
@@ -163,9 +144,6 @@ public class StudyPersister extends AccessiblePersister<Study>
 		if ( needsUpdate )
 			dao.update ( study );
 
-		// Metabolights persistence
-		//for (AssayGroup ag: study.getAssayGroups()) assayGroupPersister.persist(ag);
-		
 		// Publications
 		for ( Publication pub: study.getPublications () )
 			pubPersister.persist ( pub );
@@ -179,8 +157,7 @@ public class StudyPersister extends AccessiblePersister<Study>
 
 		// assay-results
 		for ( AssayResult ar: study.getAssayResults () ) assayResultPersister.persist ( ar );
-
-		
+	
 		super.postProcess ( study );
 	}
 

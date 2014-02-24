@@ -493,6 +493,8 @@ public class Study extends HasReferences {
 		this.status = status;
 	}
 
+
+
 	
 	
 	/**

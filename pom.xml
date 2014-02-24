@@ -21,14 +21,14 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>uk.ac.ebi</groupId>
-    <version>1.4.1</version>
+    <version>1.6</version>
     <artifactId>bioinvindex</artifactId>
     <packaging>pom</packaging>
     <name>Bio-Investigation Index</name>
 
     <properties>
 
-        <bii.version>1.4.1</bii.version>
+        <bii.version>1.6</bii.version>
 
         <version.seam>2.2.1.Final</version.seam>
         <!-- MUST correspond w. seam version in parent tag -->
@@ -152,6 +152,10 @@
 
         <!-- <repository> <id>jboss-repo</id> <url>http://repository.jboss.com/maven2</url>
               <snapshots> <enabled>true</enabled> </snapshots> </repository> -->
+        <repository>
+            <id>oerc</id>
+            <url>http://frog.oerc.ox.ac.uk:8080/nexus-2.1.2/content/repositories/releases/</url>
+        </repository>
 
         <repository>
             <id>java.net</id>
@@ -215,7 +219,7 @@
         <repository>
             <id>oerc-repo</id>
             <name>OeRC Maven repository</name>
-            <url>http://frog.oerc.ox.ac.uk:8080/artifactory/libs-release-local/</url>
+            <url>http://frog.oerc.ox.ac.uk:8080/nexus-2.1.2/content/repositories/releases</url>
         </repository>
 
     </distributionManagement>

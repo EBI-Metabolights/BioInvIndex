@@ -70,28 +70,12 @@ public class AssayBridge extends IndexFieldDelimiters implements FieldBridge {
         Collection<Assay> assays = (Collection<Assay>) o;
 
         for (Assay assay : assays) {
-
-
-            String type = buildType(assay);
-
-            if (!assayTypeToInfo.containsKey(type)) {
-                AssayTypeInfo info = new AssayTypeInfo();
-                assayTypeToInfo.put(type, info);
-            }
+            String type = addToAssayTypes(assayTypeToInfo, assay);
             // only go looking for assay results if there is a material associated with the assay.
             if (assay.getMaterial() != null) {
-            	// TODO: Avoid deletion error (story ' Christophe Junot's study can not be resubmitted')
-            	// https://www.pivotaltracker.com/projects/620203#!/stories/35089785
-            	try{
-	                Collection<AssayResult> assayResults = ProcessingUtils.findAssayResultsFromAssay(assay);
-	                createAssayExternalLinks(assayTypeToInfo, assayResults, type);
-            	}catch(Exception e){
-            		// It it fails continue...fixes the bug when unloading an study and the call to findAssayResultsFromAssay end up in an exception:
-            		// NullPointerException: at org.hibernate.event.def.DefaultInitializeCollectionEventListener.initializeCollectionFromCache(DefaultInitializeCollectionEventListener.java:116)
-            	}
+                createAssayExternalLinks(assayTypeToInfo, assay.getStudy().getAssayResults(), assay);
             }
             createXrefs(assayTypeToInfo, assay, type);
-
             assayTypeToInfo.get(type).increaseCount();
         }
 
@@ -125,6 +109,7 @@ public class AssayBridge extends IndexFieldDelimiters implements FieldBridge {
         }
     }
 
+
     private void createXrefs(Map<String, AssayTypeInfo> assayTypeToInfo, Assay assay, String type) {
         for (Xref xref : assay.getXrefs()) {
             StringBuilder sb = new StringBuilder();
@@ -134,33 +119,55 @@ public class AssayBridge extends IndexFieldDelimiters implements FieldBridge {
         }
     }
 
-    private void createAssayExternalLinks(Map<String, AssayTypeInfo> assayTypeToInfo, Collection<AssayResult> assayResults, String type) {
+    private void createAssayExternalLinks(Map<String, AssayTypeInfo> assayTypeToInfo, Collection<AssayResult> assayResults, Assay assay) {
         Set<String> addedLinks = new HashSet<String>();
-        for (AssayResult result : assayResults) {
+
+        System.out.println("*** CREATING Assay External Links ***");
+
+        Collection<AssayResult> data = ProcessingUtils.findAllDataInAssay(assay);
+
+        for (AssayResult result : data) {
+
             // we're only looking at links...should accommodate webdav etc. too
             if (result.getData() != null) {
                 String dataFileName = result.getData().getName() == null ? "" : result.getData().getName();
                 if (dataFileName.matches("(http|ftp|https).*") && dataFileName.contains("/")) {
                     // we only store the folder since that will take us to multiple file locations. Otherwise we'd have too
                     // many individual links pointing to the same place.
+                    String dataResultType = result.getData().getType().getName();
+                    dataResultType = dataResultType == null ? "" : dataResultType;
+
                     String folder = dataFileName.substring(0, result.getData().getName().lastIndexOf("/"));
-                    if (!addedLinks.contains(folder)) {
-                        StringBuilder sb = new StringBuilder();
-                        sb.append("link(").append(folder).append("->");
-                        String dataFileType = result.getData().getType().getName() == null ? "" : result.getData().getType().getName();
-                        sb.append(dataFileType).append(")");
+
+                    if (!addedLinks.contains(dataResultType + folder)) {
+                        String type = addToAssayTypes(assayTypeToInfo, assay);
+
+                        StringBuilder linkBuilder = new StringBuilder();
+                        linkBuilder.append("link(").append("<" + assay.getAcc() + ">" +folder).append("->");
+
+                        linkBuilder.append(dataResultType).append(")");
                         addedLinks.add(folder);
-                        assayTypeToInfo.get(type).addAccession(sb.toString());
+
+                        assayTypeToInfo.get(type).addAccession(linkBuilder.toString());
                     }
                 }
             }
         }
     }
 
+    private String addToAssayTypes(Map<String, AssayTypeInfo> assayTypeToInfo, Assay assay) {
+        String type = buildType(assay);
+
+        if (!assayTypeToInfo.containsKey(type)) {
+            AssayTypeInfo info = new AssayTypeInfo();
+            assayTypeToInfo.put(type, info);
+        }
+        return type;
+    }
+
     private String buildType(Assay assay) {
         return assay.getMeasurement().getName() + "|" + assay.getTechnologyName();
     }
-
 
     private class AssayTypeInfo {
 

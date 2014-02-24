@@ -12,7 +12,7 @@
 	<parent>
 		<groupId>uk.ac.ebi</groupId>
 		<artifactId>bioinvindex</artifactId>
-		<version>1.4.1</version>
+		<version>1.6</version>
 	</parent>
 
 	<dependencies>
@@ -47,6 +47,12 @@
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+        <dependency>
+            <groupId>uk.ac.ebi</groupId>
+            <artifactId>jutils</artifactId>
+            <version>1.4</version>
+        </dependency>
 
 		<!-- new -->
 		<dependency>
