@@ -5,5 +5,6 @@ package uk.ac.ebi.bioinvindex.model.security;
  */
 public enum UserRole {
 	SUBMITTER,
-	CURATOR
+	CURATOR,
+    REVIEWER
 }
