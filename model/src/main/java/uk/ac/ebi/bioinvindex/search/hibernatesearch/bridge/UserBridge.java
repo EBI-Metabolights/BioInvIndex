@@ -14,26 +14,33 @@ public class UserBridge extends IndexFieldDelimiters implements FieldBridge {
 
 
     public void set(String s, Object o, Document document, LuceneOptions luceneOptions) {
-        if (o == null) return;
+        if (o == null || document == null || luceneOptions == null) return;
+
+        System.out.println("_________UserBridge.set__________\n");
 
         Collection<User> users = (Collection<User>) o;
 
-        for (User user : users) {
+        try {
+            for (User user : users) {
 
-            Person p = (Person) user;
+                Person p = (Person) user;
 
-            if (p != null) {
+                if (p != null) {
 
-                String representation = buildRepresentationForIndex("username:" + p.getUserName(),
-                        "forename:" + p.getFirstName(), "surname:" + p.getLastName(), "email:" + user.getEmail());
+                    String representation = buildRepresentationForIndex("username:" + p.getUserName(),
+                            "forename:" + p.getFirstName(), "surname:" + p.getLastName(), "email:" + user.getEmail());
 
-                Field fvField =
-                        new Field("user", representation, luceneOptions.getStore(), luceneOptions.getIndex());
+                    Field fvField =
+                            new Field("user", representation, luceneOptions.getStore(), luceneOptions.getIndex());
 
-                document.add(fvField);
+                    document.add(fvField);
+
+                }
 
             }
-
+        } catch (Exception e){
+            System.out.println("ERROR: UserBridge.set caused a NPE, ignoring\n");
+            return;
         }
     }
 }

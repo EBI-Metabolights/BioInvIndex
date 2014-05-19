@@ -1,6 +1,5 @@
 package uk.ac.ebi.bioinvindex.model;
 
-import org.hibernate.annotations.Where;
 import org.hibernate.search.annotations.ContainedIn;
 import org.hibernate.search.annotations.Indexed;
 
@@ -65,7 +64,7 @@ public class Metabolite extends Identifiable{
 	@OneToMany(targetEntity = uk.ac.ebi.bioinvindex.model.MetaboliteSample.class,
 			cascade = {CascadeType.ALL})
 	@JoinColumn(name = "METABOLITE_ID", nullable = true)
-    @Where(clause="value is not null")
+    //@Where(clause="value is not null")
 	public Collection<uk.ac.ebi.bioinvindex.model.MetaboliteSample> getMetaboliteSamples() {
 		return msMetSamples;
 	}

@@ -72,9 +72,9 @@ public class AssayBridge extends IndexFieldDelimiters implements FieldBridge {
         for (Assay assay : assays) {
             String type = addToAssayTypes(assayTypeToInfo, assay);
             // only go looking for assay results if there is a material associated with the assay.
-            if (assay.getMaterial() != null) {
-                createAssayExternalLinks(assayTypeToInfo, assay.getStudy().getAssayResults(), assay);
-            }
+            //if (assay.getMaterial() != null) {
+            //    createAssayExternalLinks(assayTypeToInfo, assay.getStudy().getAssayResults(), assay);
+            //}
             createXrefs(assayTypeToInfo, assay, type);
             assayTypeToInfo.get(type).increaseCount();
         }
