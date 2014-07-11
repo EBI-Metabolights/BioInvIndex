@@ -90,7 +90,8 @@ public class BIIQueryBuilder<T extends Identifiable> {
                         "investigation_acc",
                         "investigation_description",
                         "investigation_title",
-                        "user"
+                        "user",
+                        "obfuscationcode"
 
                 };
 
