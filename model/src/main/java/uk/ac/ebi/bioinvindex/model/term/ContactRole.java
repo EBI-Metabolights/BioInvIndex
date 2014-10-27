@@ -50,7 +50,7 @@ import javax.persistence.Entity;
 
 /**
  * Term to classify the role(s) performed by each person. Multiple annotations or values attached to one person may be
- * provided by using a semicolon (";") a separator, for example: "submitter;funder;sponsor”.
+ * provided by using a semicolon (";") a separator, for example: "submitter;funder;sponsor.
  *
  * @author Brandizi
  */
